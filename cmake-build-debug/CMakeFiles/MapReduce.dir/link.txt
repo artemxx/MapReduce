@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/MapReduce.dir/reduce.cpp.o  -o MapReduce 
