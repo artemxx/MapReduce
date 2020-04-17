@@ -1,4 +1,1 @@
-/snap/clion/111/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/artem/Desktop/MapReduce
--- Configuring done
--- Generating done
--- Build files have been written to: /home/artem/Desktop/MapReduce/cmake-build-debug
+CMakeLists.txt not found in /home/artem/Desktop/MapReduce Select CMakeLists.txt file...

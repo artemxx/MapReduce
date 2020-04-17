@@ -38,13 +38,6 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
   </component>
-  <component name="RunManager">
-    <configuration name="MapReduce" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MapReduce" TARGET_NAME="MapReduce" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="MapReduce" RUN_TARGET_NAME="MapReduce">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
