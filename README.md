@@ -17,7 +17,7 @@ The *mapreduce* script works as follows:
 ```
 Where `type` is a *map* or *reduce*, and `script`, `src_file`, `dst_file` are the paths to the script to be run, input and output data, respectively.
 
-To use, you need to run the following set of commands:
+To get data from the results folder, I used the following set of commands:
 
 ```
 g++ map.cpp -o map
