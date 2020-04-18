@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/untitled4.dir/mapreduce.cpp.o  -o untitled4 
