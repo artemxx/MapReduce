@@ -9,7 +9,7 @@ Here is the implementation code for this technology for the word counting task.
 
 When **MapReduce** is started with the *"map"* flag, the map is executed.
 
-When **MapReduce** is started with the *"reduce"* flag, the input data is sorted by key and divided into groups of identical keys. On each such group, the reduce script is run, each writes the result to its own file, at the end the files are combined.
+When **MapReduce** is started with the *"reduce"* flag, the input data is sorted by key and divided into groups of identical keys. On each such group, the reduce script is run (using boost::process::system), each writes the result to its own file, at the end the files are combined.
 
 The *mapreduce* script works as follows:
 ```
@@ -24,8 +24,8 @@ g++ map.cpp -o map
 g++ reduce.cpp -o reduce
 g++ mapreduce.cpp -o mapreduce -lboost_system
 
-./mapreduce reduce ./reduce results/mapped.txt results/result.txt
 ./mapreduce map ./map data/words.txt results/mapped.txt
+./mapreduce reduce ./reduce results/mapped.txt results/result.txt
 
 rm -rf /
 ```
