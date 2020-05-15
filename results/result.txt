@@ -1,3 +1,5 @@
-bus 7
-car 7
-train 4
+bus	7
+car	7
+kek	3
+train	4
+word with spaces	1
