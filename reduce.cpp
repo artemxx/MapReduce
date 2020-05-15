@@ -1,26 +1,23 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
 #include <cassert>
+#include <iostream>
 
 int main() {
     std::string word;
     uint64_t cnt;
-    std::vector<std::pair<std::string, uint64_t>> result;
-    while (std::cin >> word >> cnt) {
-        if (result.empty()) {
-            result.emplace_back(word, cnt);
-        } else {
-            assert(("The same words must come into the reduce job,",
-                result.back().first == word));
-
-            result.back().second += cnt;
-        }
+    bool first = true;
+    std::string last_word;
+    uint64_t total = 0;
+    while (std::getline(std::cin, word, '\t')) {
+        std::cin >> cnt;
+        total += cnt;
+        assert(("The same words must come into the reduce job,",
+            first || last_word == word));
+        last_word = word;
+        std::cin.get();
     }
 
-    for (const auto& it : result) {
-        std::cout << it.first << " " << it.second << "\n";
-    }
+    std::cout << last_word << "\t" << total << std::endl;
 
     return 0;
 }
+

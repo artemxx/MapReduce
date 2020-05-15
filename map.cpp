@@ -2,9 +2,13 @@
 
 int main() {
     std::string word;
-    while (std::cin >> word) {
-        std::cout << word << " 1" << "\n";
+    while (std::getline(std::cin, word, '\t')) {
+        if (word == "\n") {
+            break;
+        }
+        std::cout << word << "\t1" << "\n";
     }
 
     return 0;
 }
+

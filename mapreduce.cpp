@@ -1,7 +1,7 @@
-#include <iostream>
 #include <boost/process.hpp>
+#include <iostream>
 
-using namespace boost::process;
+namespace bp = boost::process;
 
 using WordData = std::vector<std::pair<std::string, uint64_t>>;
 
@@ -9,42 +9,35 @@ std::string GetReduceFileName(const std::string& type, uint64_t file_num) {
     return "reduce_job_" + type + "_" + std::to_string(file_num) + ".txt";
 }
 
-void RunReduceJob(const std::string& script_path, const WordData& data, uint64_t file_num) {
+bp::child RunReduceJob(const std::string& script_path, const WordData& data, uint64_t file_num) {
     const auto file_name = GetReduceFileName("input", file_num);
 
     std::freopen(file_name.data(), "w", stdout);
     for (const auto& it : data) {
-        std::cout << it.first << " " << it.second << std::endl;
+        std::cout << it.first << "\t" << it.second << std::endl;
     }
 
     const auto out_file_name = GetReduceFileName("output", file_num);
-    system(script_path, std_out > out_file_name, std_in < file_name);
+    return bp::child(script_path, bp::std_out > out_file_name, bp::std_in < file_name);
 }
 
 struct TMapReduceOptions {
-    using Str = std::string;
-
-    Str type;
-    Str script_path;
-    Str src_file;
-    Str dst_file;
+    std::string type;
+    std::string script_path;
+    std::string src_file;
+    std::string dst_file;
 };
 
-void RunReduce(const TMapReduceOptions& options) {
-    WordData words;
-    {
-        std::string word;
-        uint64_t cnt;
-        std::ifstream stream(options.src_file);
-        while (stream >> word >> cnt) {
-            words.emplace_back(word, cnt);
-        }
-    }
+void AppendReduceProcess(const TMapReduceOptions& options, std::vector<bp::child>& processes,
+                         const WordData& data, uint64_t& file_num) {
+    auto child = RunReduceJob(options.script_path, data, ++file_num);
+    processes.push_back(std::move(child));
+}
 
-    std::sort(words.begin(), words.end());
-
+uint64_t SplitIntoJobs(const TMapReduceOptions& options, const WordData& words) {
     uint64_t file_num = 0;
     WordData data;
+    std::vector<bp::child> processes;
     for (const auto& item : words) {
         const auto& word = item.first;
         const auto cnt = item.second;
@@ -54,13 +47,21 @@ void RunReduce(const TMapReduceOptions& options) {
         }
 
         if (data.back().first != word) {
-            RunReduceJob(options.script_path, data, ++file_num);
+            AppendReduceProcess(options, processes, data, file_num);
             data.clear();
             data.emplace_back(word, cnt);
         }
     }
-    RunReduceJob(options.script_path, data, ++file_num);
+    AppendReduceProcess(options, processes, data, file_num);
 
+    for (auto& process : processes) {
+        process.wait();
+    }
+
+    return file_num;
+}
+
+void MergeOutputs(const TMapReduceOptions& options, uint64_t file_num) {
     // cat file_1 file_2 ...
     std::string command = "cat";
     for (int i = 1; i <= file_num; ++i) {
@@ -68,8 +69,10 @@ void RunReduce(const TMapReduceOptions& options) {
         command += " " + file_name;
     }
 
-    system(command, std_out > options.dst_file);
+    bp::system(command, bp::std_out > options.dst_file);
+}
 
+void RemoveTempFiles(uint64_t file_num) {
     for (int i = 1; i <= file_num; ++i) {
         const auto inp_file_name = GetReduceFileName("input", i);
         const auto out_file_name = GetReduceFileName("output", i);
@@ -78,8 +81,30 @@ void RunReduce(const TMapReduceOptions& options) {
     }
 }
 
+WordData ScanWords(const TMapReduceOptions& options) {
+    WordData words;
+    std::string word;
+    uint64_t cnt;
+    std::ifstream stream(options.src_file);
+    while (std::getline(stream, word, '\t')) {
+        stream >> cnt;
+        words.emplace_back(word, cnt);
+        stream.get();
+    }
+
+    return words;
+}
+
+void RunReduce(const TMapReduceOptions& options) {
+    auto words = ScanWords(options);
+    std::sort(words.begin(), words.end());
+    uint64_t file_num = SplitIntoJobs(options, words);
+    MergeOutputs(options, file_num);
+    RemoveTempFiles(file_num);
+}
+
 void RunMap(const TMapReduceOptions& options) {
-    system(options.script_path, std_out > options.dst_file, std_in < options.src_file);
+    bp::system(options.script_path, bp::std_out > options.dst_file, bp::std_in < options.src_file);
 }
 
 void RunMapReduce(const TMapReduceOptions& options) {
@@ -92,18 +117,26 @@ void RunMapReduce(const TMapReduceOptions& options) {
     }
 }
 
+enum EMapReduceArgs {
+    Type = 1,
+    ScriptPath = 2,
+    SrcFile = 3,
+    DstFile = 4
+};
+
 int main(int num_args, char* arg_values[]) {
     if (num_args != 5) {
         throw std::runtime_error("MapReduce must take 5 arguments");
     }
 
     TMapReduceOptions options;
-    options.type = arg_values[1];
-    options.script_path = arg_values[2];
-    options.src_file = arg_values[3];
-    options.dst_file = arg_values[4];
+    options.type = arg_values[EMapReduceArgs::Type];
+    options.script_path = arg_values[EMapReduceArgs::ScriptPath];
+    options.src_file = arg_values[EMapReduceArgs::SrcFile];
+    options.dst_file = arg_values[EMapReduceArgs::DstFile];
 
     RunMapReduce(options);
 
     return 0;
 }
+
